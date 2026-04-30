@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: crm_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: clientflow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build: ./server
+    container_name: crm_api
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/clientflow_db?schema=public"
+      JWT_SECRET: "your_super_secret_key"
+    # Это позволяет видеть изменения кода сразу:
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  client:
+    build: ./client
+    container_name: crm_client
+    ports:
+      - "3000:3000"
+    # И здесь тоже самое для фронтенда:
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  db_data:

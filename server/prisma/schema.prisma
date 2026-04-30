@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Таблица users (Пункт 6 ТЗ)
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+}
+
+// Таблица clients (Пункт 6 ТЗ)
+model Client {
+  id         Int       @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String
+  created_at DateTime  @default(now())
+  requests   Request[]
+}
+
+// Таблица requests (Пункт 6 ТЗ)
+model Request {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  status      Status    @default(NEW)
+  created_at  DateTime  @default(now())
+  
+  client      Client    @relation(fields: [client_id], references: [id])
+  client_id   Int
+  
+  comments    Comment[]
+}
+
+// Таблица comments (Пункт 6 ТЗ)
+model Comment {
+  id         Int      @id @default(autoincrement())
+  text       String
+  created_at DateTime @default(now())
+  
+  request    Request  @relation(fields: [request_id], references: [id])
+  request_id Int
+}
+
+// Перечисление статусов из Пункта 5.2 ТЗ
+enum Status {
+  NEW
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
