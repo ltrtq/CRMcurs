@@ -43,10 +43,9 @@ model Request {
 model Comment {
   id         Int      @id @default(autoincrement())
   text       String
-  created_at DateTime @default(now())
-  
+  request_id Int      // Убедись, что тут именно Int и название совпадает
   request    Request  @relation(fields: [request_id], references: [id])
-  request_id Int
+  created_at DateTime @default(now())
 }
 
 // Перечисление статусов из Пункта 5.2 ТЗ
