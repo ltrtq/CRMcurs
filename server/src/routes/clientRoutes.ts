@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { createClient, getClients, updateClient, deleteClient } from '../controllers/clientController';
-import { authenticateToken } from '../middlewares/authMiddleware';
+import { 
+  getClients, 
+  createClient, 
+  updateClient, 
+  deleteClient 
+} from '../controllers/clientController';
 
 const router = Router();
 
-// Защищаем все роуты клиентов авторизацией
-router.use(authenticateToken);
-
-router.post('/', createClient);
 router.get('/', getClients);
+router.post('/', createClient);
 router.put('/:id', updateClient);
 router.delete('/:id', deleteClient);
 
