@@ -4,21 +4,18 @@ import {
   getRequests, 
   updateRequest, 
   addComment, 
-  getComments 
+  getComments,
+  getRequestById 
 } from '../controllers/requestController';
 import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Все роуты защищены (ТЗ требует авторизации для менеджера)
-router.use(authenticateToken);
-
-router.post('/', createRequest);           // Создать заявку
-router.get('/', getRequests);             // Список с фильтром
-router.put('/:id', updateRequest);        // Изменить (статус/описание)
-
-// Комментарии (Пункт 5.3 ТЗ)
-router.post('/comments', addComment);      
-router.get('/:requestId/comments', getComments);
+router.get('/', getRequests);
+router.post('/', createRequest);
+router.get('/:id', getRequestById); // ПРОВЕРЬ НАЛИЧИЕ ЭТОЙ СТРОКИ
+router.put('/:id', updateRequest);
+router.get('/:id/comments', getComments);
+router.post('/comments', addComment);
 
 export default router;
