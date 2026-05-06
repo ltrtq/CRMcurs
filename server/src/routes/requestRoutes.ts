@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import { 
-  createRequest, 
   getRequests, 
+  createRequest, 
   updateRequest, 
-  addComment, 
-  getComments,
-  getRequestById 
+  getRequestById, // Убедись, что он тут есть
+  deleteRequest, 
+  getComments, 
+  addComment 
 } from '../controllers/requestController';
-import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
 router.get('/', getRequests);
 router.post('/', createRequest);
-router.get('/:id', getRequestById); // ПРОВЕРЬ НАЛИЧИЕ ЭТОЙ СТРОКИ
-router.put('/:id', updateRequest);
-router.get('/:id/comments', getComments);
-router.post('/comments', addComment);
+router.get('/:id', getRequestById);           // Получить одну
+router.put('/:id', updateRequest);            // Обновить
+router.delete('/:id', deleteRequest);         // Удалить
+router.get('/:id/comments', getComments);     // Комменты
+router.post('/comments', addComment);         // Добавить коммент
 
 export default router;

@@ -28,7 +28,7 @@ function App() {
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
         <Route path="/clients" element={<Layout><ClientsPage /></Layout>} />
         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/requests/:id" element={<RequestDetails />} />
+        <Route path="/requests/:id" element={<Layout><RequestDetails /></Layout>} />
       </Routes>
     </Router>
   );

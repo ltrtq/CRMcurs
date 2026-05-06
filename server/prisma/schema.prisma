@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Таблица users (Пункт 6 ТЗ)
+// Таблица users
 model User {
   id         Int      @id @default(autoincrement())
   email      String   @unique
@@ -15,7 +15,7 @@ model User {
   created_at DateTime @default(now())
 }
 
-// Таблица clients (Пункт 6 ТЗ)
+// Таблица clients
 model Client {
   id         Int       @id @default(autoincrement())
   name       String
@@ -25,7 +25,7 @@ model Client {
   requests   Request[]
 }
 
-// Таблица requests (Пункт 6 ТЗ)
+// Таблица requests
 model Request {
   id          Int       @id @default(autoincrement())
   title       String
@@ -39,17 +39,16 @@ model Request {
   comments    Comment[]
 }
 
-// Таблица comments (Пункт 6 ТЗ)
+// Таблица comments
 model Comment {
   id         Int      @id @default(autoincrement())
-  text       String
-  created_at DateTime @default(now())
-  
-  request    Request  @relation(fields: [request_id], references: [id])
   request_id Int
+  text       String   
+  created_at DateTime @default(now())
+  request    Request  @relation(fields: [request_id], references: [id])
 }
 
-// Перечисление статусов из Пункта 5.2 ТЗ
+
 enum Status {
   NEW
   IN_PROGRESS

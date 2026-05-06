@@ -1,98 +1,123 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/api';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const Dashboard = () => {
-  const [requests, setRequests] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [status, setStatus] = useState('');
-  const [search, setSearch] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [selectedClientId, setSelectedClientId] = useState('');
+    const [requests, setRequests] = useState([]);
+    const [clients, setClients] = useState([]);
+    const [title, setTitle] = useState('');
+    const [clientId, setClientId] = useState('');
+    const [description, setDescription] = useState('');
 
-  const fetchData = useCallback(async () => {
-    try {
-      const resReq = await api.get(`/requests?status=${status}&search=${search}`);
-      setRequests(resReq.data);
-      const resCl = await api.get('/clients');
-      setClients(resCl.data);
-    } catch (e) {}
-  }, [status, search]); // Зависимости функции
+    useEffect(() => {
+        loadData();
+    }, []);
 
-  useEffect(() => { 
-    fetchData(); 
-  }, [fetchData]);
+    const loadData = async () => {
+        try {
+            const [reqRes, cliRes] = await Promise.all([
+                api.get('/requests'),
+                api.get('/clients')
+            ]);
+            setRequests(reqRes.data);
+            setClients(cliRes.data);
+        } catch (err) {
+            toast.error('Ошибка загрузки данных');
+        }
+    };
 
-  const handleCreateRequest = async (e) => {
+    const handleCreate = async (e) => {
     e.preventDefault();
-    if(!selectedClientId) return toast.error("Выберите клиента!");
+    if (!clientId) return toast.warning('Выберите клиента');
     try {
-      await api.post('/requests', { title: newTitle, client_id: selectedClientId });
-      toast.success("Заявка создана");
-      setNewTitle('');
-      fetchData();
-    } catch (err) {}
-  };
+        // Отправляем title, client_id И description
+        await api.post('/requests', { 
+            title, 
+            client_id: clientId, 
+            description 
+        });
+        setTitle('');
+        setDescription(''); // Очищаем поле после создания
+        setClientId('');
+        loadData();
+        toast.success('Заявка создана');
+    } catch (err) {
+        toast.error('Ошибка при создании');
+    }
+};
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>Панель управления</h1>
-      
-      <form onSubmit={handleCreateRequest} style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ccc' }}>
-        <h3>Создать новую заявку</h3>
-        <input placeholder="Что нужно сделать?" value={newTitle} onChange={e => setNewTitle(e.target.value)} required />
-        <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} required>
-          <option value="">-- Выберите клиента --</option>
-          {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <button type="submit">Добавить</button>
-      </form>
+    const handleDelete = async (id) => {
+        if (window.confirm('Удалить заявку?')) {
+            try {
+                await api.delete(`/requests/${id}`);
+                setRequests(requests.filter(r => r.id !== id));
+                toast.success('Удалено');
+            } catch (err) {
+                toast.error('Ошибка удаления');
+            }
+        }
+    };
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-        <input placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} />
-        <button onClick={fetchData}>Найти</button>
-        <select value={status} onChange={e => setStatus(e.target.value)}>
-          <option value="">Все статусы</option>
-          <option value="NEW">NEW</option>
-          <option value="IN_PROGRESS">IN_PROGRESS</option>
-          <option value="DONE">DONE</option>
-        </select>
-      </div>
+    return (
+        <div style={{ padding: '20px' }}>
+            <h2>Управление заявками</h2>
+            
+            <form onSubmit={handleCreate} style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+                <input 
+                    placeholder="Заголовок заявки" 
+                    value={title} 
+                    onChange={(e) => setTitle(e.target.value)} 
+                    required 
+                    style={{ flex: 2 }}
+                />
+                <select 
+                    value={clientId} 
+                    onChange={(e) => setClientId(e.target.value)} 
+                    required
+                    style={{ flex: 1 }}
+                >
+                    <option value="">-- Выберите клиента --</option>
+                    {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+                <textarea 
+                  placeholder="Описание проблемы" 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)}
+                  style={{ flex: 3, padding: '5px' }}
+                />
+                <button type="submit">Создать заявку</button>
+            </form>
 
-      <table border="1" width="100%" style={{ borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#eee' }}>
-            <th>ID</th><th>Заголовок</th><th>Клиент</th><th>Статус</th>
-          </tr>
-        </thead>
-        <tbody>
-          {requests.map(req => (
-            <tr key={req.id}>
-              <td>{req.id}</td>
-              <td><Link to={`/requests/${req.id}`}>{req.title}</Link></td>
-              <td>{req.client?.name}</td>
-              <td>{req.status}</td>
-              <td style={{ display: 'flex', gap: '10px' }}>
-  <Link to={`/requests/${req.id}`} className="btn-view">Открыть</Link>
-  <button 
-    onClick={async () => {
-      if (window.confirm('Удалить заявку?')) {
-        await api.delete(`/requests/${req.id}`);
-        window.location.reload(); // Простой способ обновить список
-      }
-    }}
-    style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', cursor: 'pointer', padding: '5px 10px' }}
-  >
-    Удалить
-  </button>
-</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+            <table border="1" width="100%" style={{ borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                    <tr style={{ backgroundColor: '#f4f4f4' }}>
+                        <th>ID</th>
+                        <th>Заголовок</th>
+                        <th>Клиент</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {requests.map(req => (
+                        <tr key={req.id}>
+                            <td>{req.id}</td>
+                            <td>{req.title}</td>
+                            <td><strong>{req.client?.name || `ID: ${req.client_id}`}</strong></td>
+                            <td>{req.status}</td>
+                            <td>
+                                <Link to={`/requests/${req.id}`} style={{ marginRight: '10px' }}>Открыть</Link>
+                                <button onClick={() => handleDelete(req.id)} style={{ color: 'red', cursor: 'pointer' }}>Удалить</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
 export default Dashboard;
