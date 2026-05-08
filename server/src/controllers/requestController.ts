@@ -100,8 +100,8 @@ export const getRequestComments = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const comments = await prisma.comment.findMany({
-      where: { requestId: Number(id) },
-      orderBy: { createdAt: 'asc' },
+      where: { requestId: Number(id) },   
+      orderBy: { createdAt: 'asc' },      
     });
     return res.json(comments);
   } catch (error) {
@@ -112,14 +112,14 @@ export const getRequestComments = async (req: Request, res: Response) => {
 
 export const createComment = async (req: Request, res: Response) => {
   try {
-    const { text, requestId } = req.body;  // теперь поле text
+    const { text, requestId } = req.body; 
     if (!text || !requestId) {
       return res.status(400).json({ message: 'text и requestId обязательны' });
     }
 
     const comment = await prisma.comment.create({
       data: {
-        text,                               // передаём text
+        text,
         requestId: Number(requestId),
       },
     });
@@ -127,5 +127,35 @@ export const createComment = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Ошибка создания комментария:', error);
     return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  }
+};
+
+export const updateComment = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ message: 'Поле text обязательно' });
+    }
+
+    const comment = await prisma.comment.update({
+      where: { id: Number(id) },
+      data: { text },
+    });
+    return res.json(comment);
+  } catch (error) {
+    console.error('Ошибка обновления комментария:', error);
+    return res.status(500).json({ message: 'Не удалось обновить комментарий' });
+  }
+};
+
+export const deleteComment = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.comment.delete({ where: { id: Number(id) } });
+    return res.json({ message: 'Комментарий удалён' });
+  } catch (error) {
+    console.error('Ошибка удаления комментария:', error);
+    return res.status(500).json({ message: 'Не удалось удалить комментарий' });
   }
 };

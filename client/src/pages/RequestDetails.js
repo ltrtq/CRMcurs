@@ -9,7 +9,7 @@ const RequestDetails = () => {
     const [request, setRequest] = useState(null);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
-    const [commentSearch, setCommentSearch] = useState(''); // Для поиска по истории
+    const [commentSearch, setCommentSearch] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
@@ -21,7 +21,6 @@ const RequestDetails = () => {
                 setRequest(reqRes.data);
                 setComments(comRes.data);
             } catch (err) {
-                // Обработка случая, когда сервер недоступен или заявка удалена
                 if (!err.response) {
                     toast.error('Сервер недоступен. Проверьте Docker-контейнеры');
                 } else {
@@ -33,10 +32,9 @@ const RequestDetails = () => {
         loadData();
     }, [id, navigate]);
 
-    // Аналитика для конкретной заявки
     const stats = {
         commentCount: comments.length,
-        daysOpen: request ? Math.floor((new Date() - new Date(request.created_at || Date.now())) / (1000 * 60 * 60 * 24)) : 0
+        daysOpen: request ? Math.floor((new Date() - new Date(request.createdAt || Date.now())) / (1000 * 60 * 60 * 24)) : 0
     };
 
     const handleStatusChange = async (newStatus) => {
@@ -51,17 +49,17 @@ const RequestDetails = () => {
 
     const handleAddComment = async (e) => {
         e.preventDefault();
+        if (!newComment.trim()) return;
         try {
-            // Используем 'content', так как это поле теперь в схеме Prisma
-            const res = await api.post('/requests/comments', { 
-                request_id: Number(id), 
-                content: newComment 
+            const res = await api.post('/requests/comments', {  
+                text: newComment,                      
+                requestId: Number(id)                   
             });
             setComments([...comments, res.data]);
             setNewComment('');
             toast.success('Комментарий добавлен');
         } catch (err) {
-            toast.error('Ошибка добавления. Проверьте связь с базой');
+            toast.error('Ошибка добавления комментария');
         }
     };
 
@@ -78,11 +76,11 @@ const RequestDetails = () => {
     };
 
     const handleEditComment = async (comment) => {
-        const newContent = prompt("Редактировать комментарий:", comment.content);
-        if (!newContent || newContent === comment.content) return;
+        const newText = prompt("Редактировать комментарий:", comment.text);
+        if (!newText || newText === comment.text) return;
 
         try {
-            const res = await api.put(`/requests/comments/${comment.id}`, { content: newContent });
+            const res = await api.put(`/requests/comments/${comment.id}`, { text: newText });
             setComments(comments.map(com => com.id === comment.id ? res.data : com));
             toast.success('Комментарий изменен');
         } catch (err) {
@@ -90,9 +88,8 @@ const RequestDetails = () => {
         }
     };
 
-    // Фильтрация комментариев
-    const filteredComments = comments.filter(c => 
-        c.content.toLowerCase().includes(commentSearch.toLowerCase())
+    const filteredComments = comments.filter(c =>
+        c.text.toLowerCase().includes(commentSearch.toLowerCase())
     );
 
     if (!request) return <div style={{ padding: '20px' }}>Загрузка данных заявки...</div>;
@@ -126,7 +123,7 @@ const RequestDetails = () => {
                     >
                         <option value="NEW">Новая</option>
                         <option value="IN_PROGRESS">В работе</option>
-                        <option value="COMPLETED">Завершена</option>
+                        <option value="DONE">Завершена</option>
                         <option value="CANCELLED">Отменена</option>
                     </select>
                 </p>
@@ -152,10 +149,10 @@ const RequestDetails = () => {
                     <div className="comments-list">
                         {filteredComments.map(comment => (
                             <div key={comment.id} style={{ borderBottom: '1px solid #eee', padding: '15px 0', backgroundColor: '#fff' }}>
-                                <p style={{ margin: '0 0 8px 0', whiteSpace: 'pre-wrap' }}>{comment.content}</p>
+                                <p style={{ margin: '0 0 8px 0', whiteSpace: 'pre-wrap' }}>{comment.text}</p>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <small style={{ color: '#888' }}>
-                                        {new Date(comment.created_at).toLocaleString()}
+                                        {new Date(comment.createdAt).toLocaleString()}
                                     </small>
                                     <div>
                                         <button 

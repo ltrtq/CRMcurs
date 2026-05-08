@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 const Clients = () => {
     const navigate = useNavigate();
     const [clients, setClients] = useState([]);
-    const [allRequests, setAllRequests] = useState([]); 
+    const [allRequests, setAllRequests] = useState([]);
     const [formData, setFormData] = useState({ name: '', phone: '', email: '' });
     const [searchTerm, setSearchTerm] = useState('');
-    const [expandedClientId, setExpandedClientId] = useState(null); 
+    const [expandedClientId, setExpandedClientId] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -19,7 +19,7 @@ const Clients = () => {
         try {
             const [cliRes, reqRes] = await Promise.all([
                 api.get('/clients'),
-                api.get('/requests') 
+                api.get('/requests')
             ]);
             setClients(cliRes.data);
             setAllRequests(reqRes.data);
@@ -34,12 +34,12 @@ const Clients = () => {
         withPhone: clients.filter(c => c.phone && c.phone.length > 5).length
     };
 
-    const cardStyle = { 
-        padding: '15px', 
-        border: '1px solid #ddd', 
-        borderRadius: '8px', 
-        flex: 1, 
-        textAlign: 'center', 
+    const cardStyle = {
+        padding: '15px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        flex: 1,
+        textAlign: 'center',
         fontWeight: 'bold',
         backgroundColor: '#f9f9f9'
     };
@@ -89,7 +89,7 @@ const Clients = () => {
         }
     };
 
-    const filteredClients = clients.filter(c => 
+    const filteredClients = clients.filter(c =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -103,7 +103,7 @@ const Clients = () => {
                 <div style={{...cardStyle, color: '#007bff'}}>С почтой: {stats.withEmail}</div>
                 <div style={{...cardStyle, color: '#28a745'}}>С телефоном: {stats.withPhone}</div>
             </div>
-            
+
             <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '20px', borderRadius: '8px' }}>
                 <h3>Добавить нового клиента</h3>
                 <form onSubmit={handleCreate} style={{ display: 'flex', gap: '10px' }}>
@@ -114,7 +114,7 @@ const Clients = () => {
                 </form>
             </div>
 
-            <input 
+            <input
                 type="text" placeholder="Поиск по имени или email..." value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ marginBottom: '15px', padding: '8px', width: '300px' }}
@@ -123,8 +123,8 @@ const Clients = () => {
             <table border="1" width="100%" style={{ borderCollapse: 'collapse' }}>
                 <thead>
                     <tr style={{ backgroundColor: '#f4f4f4' }}>
-                        <th width="40"></th> 
-                        <th width="50">ID</th> {/* Вернули ID */}
+                        <th width="40"></th>
+                        <th width="50">ID</th>
                         <th style={{ padding: '10px' }}>Имя</th>
                         <th>Телефон</th>
                         <th>Email</th>
@@ -133,7 +133,7 @@ const Clients = () => {
                 </thead>
                 <tbody>
                     {filteredClients.map(c => {
-                        const clientRequests = allRequests.filter(r => r.client_id === c.id);
+                        const clientRequests = allRequests.filter(r => r.clientId === c.id);  // <-- ИСПРАВЛЕНО
                         const isExpanded = expandedClientId === c.id;
 
                         return (
@@ -142,7 +142,7 @@ const Clients = () => {
                                     <td onClick={() => toggleExpand(c.id)} style={{ cursor: 'pointer', textAlign: 'center' }}>
                                         {isExpanded ? '▼' : '▶'}
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{c.id}</td> {/* Отображение ID */}
+                                    <td style={{ textAlign: 'center' }}>{c.id}</td>
                                     <td style={{ padding: '10px' }}>{c.name}</td>
                                     <td>{c.phone}</td>
                                     <td>{c.email}</td>

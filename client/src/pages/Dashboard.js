@@ -34,7 +34,7 @@ const Dashboard = () => {
         try {
             await api.post('/requests', { 
                 title, 
-                client_id: Number(clientId),  // <-- ИСПРАВЛЕНО: преобразуем в число
+                clientId: Number(clientId),  // <-- ИСПРАВЛЕНО: преобразуем в число
                 description 
             });
             setTitle('');
@@ -108,7 +108,7 @@ const Dashboard = () => {
                         <tr key={req.id}>
                             <td>{req.id}</td>
                             <td>{req.title}</td>
-                            <td><strong>{req.client?.name || `ID: ${req.client_id}`}</strong></td>
+                            <td><strong>{req.client?.name || `ID: ${req.clientId}`}</strong></td>
                             <td>{req.status}</td>
                             <td>
                                 <Link to={`/requests/${req.id}`} style={{ marginRight: '10px' }}>Открыть</Link>
