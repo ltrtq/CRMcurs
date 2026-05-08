@@ -111,12 +111,38 @@ export const addComment = async (req: Request, res: Response) => {
     const comment = await prisma.comment.create({
       data: {
         request_id: Number(request_id),
-        text: content // ПРИСВАИВАЕМ значение из content в поле text (или как оно у тебя в БД)
+        content: content 
       }
     });
     res.json(comment);
   } catch (error) {
     console.error(error); // Добавь лог, чтобы видеть реальную причину, если упадет
     res.status(500).json({ error: 'Ошибка добавления комментария' });
+  }
+};
+
+// Удаление комментария
+export const deleteComment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    await prisma.comment.delete({ where: { id: Number(id) } });
+    res.json({ message: 'Комментарий удален' });
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка удаления комментария' });
+  }
+};
+
+// Редактирование комментария
+export const updateComment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { content } = req.body;
+  try {
+    const updated = await (prisma.comment as any).update({
+      where: { id: Number(id) },
+      data: { content } 
+    });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка обновления комментария' });
   }
 };

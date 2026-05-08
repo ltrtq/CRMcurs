@@ -47,11 +47,15 @@ export const getClients = async (req: Request, res: Response) => {
 export const updateClient = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, phone, email } = req.body;
-  const client = await prisma.client.update({
-    where: { id: Number(id) },
-    data: { name, phone, email }
-  });
-  res.json(client);
+  try {
+    const updated = await prisma.client.update({
+      where: { id: Number(id) },
+      data: { name, phone, email }
+    });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка при обновлении клиента' });
+  }
 };
 
 export const deleteClient = async (req: Request, res: Response) => {

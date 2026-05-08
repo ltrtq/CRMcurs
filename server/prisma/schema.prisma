@@ -29,23 +29,23 @@ model Client {
 model Request {
   id          Int       @id @default(autoincrement())
   title       String
-  description String
-  status      Status    @default(NEW)
-  created_at  DateTime  @default(now())
-  
-  client      Client    @relation(fields: [client_id], references: [id])
+  description String?
+  status      String    @default("NEW")
   client_id   Int
-  
+  // Добавляем onDelete: Cascade
+  client      Client    @relation(fields: [client_id], references: [id], onDelete: Cascade)
   comments    Comment[]
+  created_at  DateTime  @default(now())
 }
 
 // Таблица comments
 model Comment {
   id         Int      @id @default(autoincrement())
+  content    String
   request_id Int
-  text       String   
+  // Добавляем onDelete: Cascade
+  request    Request  @relation(fields: [request_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
-  request    Request  @relation(fields: [request_id], references: [id])
 }
 
 

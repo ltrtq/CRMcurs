@@ -49,6 +49,32 @@ const RequestDetails = () => {
         }
     };
 
+    const handleDeleteComment = async (commentId) => {
+        if (window.confirm('Удалить этот комментарий?')) {
+            try {
+                await api.delete(`/requests/comments/${commentId}`);
+                // Фильтруем список комментариев в стейте
+                setComments(comments.filter(com => com.id !== commentId));
+                toast.success('Комментарий удален');
+            } catch (err) {
+                toast.error('Не удалось удалить комментарий');
+            }
+        }
+    };
+    
+    const handleEditComment = async (comment) => {
+        const newContent = prompt("Редактировать комментарий:", comment.content);
+        if (!newContent || newContent === comment.content) return;
+    
+        try {
+            const res = await api.put(`/requests/comments/${comment.id}`, { content: newContent });
+            setComments(comments.map(com => com.id === comment.id ? res.data : com));
+            toast.success('Комментарий изменен');
+        } catch (err) {
+            toast.error('Ошибка при редактировании');
+        }
+    };
+
     if (!request) return <div>Загрузка...</div>;
 
     return (
@@ -78,9 +104,27 @@ const RequestDetails = () => {
             <h3>История (Комментарии)</h3>
             <div style={{ marginBottom: '20px' }}>
                 {comments.map(c => (
-                    <div key={c.id} style={{ borderBottom: '1px solid #eee', padding: '5px 0' }}>
-                        <small>{new Date(c.created_at).toLocaleString()}:</small>
-                        <p style={{ margin: '5px 0' }}>{c.text || c.content}</p>
+                    <div className="comments-list">
+                        {comments.map(comment => (
+                            <div key={comment.id} style={{ borderBottom: '1px solid #eee', padding: '10px 0' }}>
+                                <p>{comment.content}</p>
+                                <small>{new Date(comment.created_at).toLocaleString()}</small>
+                                <div style={{ marginTop: '5px' }}>
+                                    <button 
+                                        onClick={() => handleEditComment(comment)}
+                                        style={{ fontSize: '12px', marginRight: '10px' }}
+                                    >
+                                        Изменить
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteComment(comment.id)}
+                                        style={{ fontSize: '12px', color: 'red' }}
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ))}
             </div>

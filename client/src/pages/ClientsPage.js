@@ -51,15 +51,33 @@ const Clients = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Удалить клиента? Это может не сработать, если у него есть активные заявки.')) {
+    const handleDelete = async (id, name) => {
+        // Формируем сообщение для пользователя
+        const confirmMessage = `ВНИМАНИЕ! Вы хотите удалить клиента "${name}".\n\n` + 
+                               `Это действие ПРИВЕДЕТ К УДАЛЕНИЮ всех его заявок и истории переписки.\n` +
+                               `Вы уверены, что хотите продолжить?`;
+
+        if (window.confirm(confirmMessage)) {
             try {
                 await api.delete(`/clients/${id}`);
                 setClients(clients.filter(c => c.id !== id));
-                toast.success('Клиент удален');
+                toast.success('Клиент и все связанные данные удалены');
             } catch (err) {
-                toast.error('Ошибка: возможно, у клиента есть заявки');
+                toast.error('Ошибка при удалении');
             }
+        }
+    };
+
+    const handleEditClient = async (client) => {
+        const newName = prompt("Введите новое ФИО:", client.name);
+        if (!newName) return;
+
+        try {
+            const res = await api.put(`/clients/${client.id}`, { ...client, name: newName });
+            setClients(clients.map(c => c.id === client.id ? res.data : c));
+            toast.success('Данные обновлены');
+        } catch (err) {
+            toast.error('Ошибка обновления');
         }
     };
 
@@ -95,7 +113,13 @@ const Clients = () => {
                             <td>{c.phone}</td>
                             <td>{c.email}</td>
                             <td>
-                                <button onClick={() => handleDelete(c.id)} style={{ color: 'red' }}>Удалить</button>
+                                <button onClick={() => handleEditClient(c)} style={{marginRight: '5px'}}>
+                                    Редактировать
+                                </button>
+                                
+                                <button onClick={() => handleDelete(c.id, c.name)}>
+                                    Удалить
+                                </button>                            
                             </td>
                         </tr>
                     ))}
