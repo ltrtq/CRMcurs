@@ -1,22 +1,26 @@
 import { Router } from 'express';
-import { 
-  getRequests, 
-  createRequest, 
-  updateRequest, 
-  getRequestById, // Убедись, что он тут есть
-  deleteRequest, 
-  getComments, 
-  addComment 
+import {
+  createRequest,
+  getRequests,
+  updateRequest,
+  deleteRequest,
+  getRequestById,
+  getRequestComments,
+  createComment,
 } from '../controllers/requestController';
+import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.get('/', getRequests);
+// Защита всех маршрутов
+router.use(authenticateToken);
+
 router.post('/', createRequest);
-router.get('/:id', getRequestById);           // Получить одну
-router.put('/:id', updateRequest);            // Обновить
-router.delete('/:id', deleteRequest);         // Удалить
-router.get('/:id/comments', getComments);     // Комменты
-router.post('/comments', addComment);         // Добавить коммент
+router.get('/', getRequests);
+router.put('/:id', updateRequest);
+router.delete('/:id', deleteRequest);
+router.get('/:id', getRequestById);
+router.get('/:id/comments', getRequestComments);
+router.post('/comments', createComment);
 
 export default router;

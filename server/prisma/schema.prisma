@@ -7,51 +7,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Таблица users
-model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
-  password   String
-  created_at DateTime @default(now())
-}
-
-// Таблица clients
-model Client {
-  id         Int       @id @default(autoincrement())
-  name       String
-  phone      String
-  email      String
-  created_at DateTime  @default(now())
-  requests   Request[]
-}
-
-// Таблица requests
-model Request {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  status      String    @default("NEW")
-  client_id   Int
-  // Добавляем onDelete: Cascade
-  client      Client    @relation(fields: [client_id], references: [id], onDelete: Cascade)
-  comments    Comment[]
-  created_at  DateTime  @default(now())
-}
-
-// Таблица comments
-model Comment {
-  id         Int      @id @default(autoincrement())
-  content    String
-  request_id Int
-  // Добавляем onDelete: Cascade
-  request    Request  @relation(fields: [request_id], references: [id], onDelete: Cascade)
-  created_at DateTime @default(now())
-}
-
-
 enum Status {
   NEW
   IN_PROGRESS
   DONE
   CANCELLED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+  requests  Request[]
+
+  @@map("clients")
+}
+
+model Request {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  status      Status    @default(NEW)
+  clientId    Int
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("requests")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  requestId Int
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("comments")
 }

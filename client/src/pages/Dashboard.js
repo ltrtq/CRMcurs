@@ -28,24 +28,26 @@ const Dashboard = () => {
     };
 
     const handleCreate = async (e) => {
-    e.preventDefault();
-    if (!clientId) return toast.warning('Выберите клиента');
-    try {
-        // Отправляем title, client_id И description
-        await api.post('/requests', { 
-            title, 
-            client_id: clientId, 
-            description 
-        });
-        setTitle('');
-        setDescription(''); // Очищаем поле после создания
-        setClientId('');
-        loadData();
-        toast.success('Заявка создана');
-    } catch (err) {
-        toast.error('Ошибка при создании');
-    }
-};
+        e.preventDefault();
+        if (!clientId) return toast.warning('Выберите клиента');
+        if (!title.trim()) return toast.warning('Введите заголовок');
+        try {
+            await api.post('/requests', { 
+                title, 
+                client_id: Number(clientId),  // <-- ИСПРАВЛЕНО: преобразуем в число
+                description 
+            });
+            setTitle('');
+            setDescription('');
+            setClientId('');
+            loadData();
+            toast.success('Заявка создана');
+        } catch (err) {
+            // Показываем конкретную ошибку от сервера, если есть
+            const msg = err.response?.data?.message || 'Ошибка при создании';
+            toast.error(msg);
+        }
+    };
 
     const handleDelete = async (id) => {
         if (window.confirm('Удалить заявку?')) {
@@ -63,7 +65,7 @@ const Dashboard = () => {
         <div style={{ padding: '20px' }}>
             <h2>Управление заявками</h2>
             
-            <form onSubmit={handleCreate} style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <form onSubmit={handleCreate} style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input 
                     placeholder="Заголовок заявки" 
                     value={title} 

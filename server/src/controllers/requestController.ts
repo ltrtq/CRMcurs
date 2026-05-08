@@ -3,146 +3,129 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// 1. Получение списка всех заявок (с инфо о клиенте)
-export const getRequests = async (req: Request, res: Response) => {
+// --- Заявки ---
+
+export const createRequest = async (req: Request, res: Response) => {
   try {
-    const requests = await prisma.request.findMany({
-      include: { 
-        client: true // Это позволит фронтенду писать req.client.name
+    const { title, description, clientId } = req.body;
+    if (!title || !clientId) {
+      return res.status(400).json({ message: 'Название и ID клиента обязательны' });
+    }
+
+    const request = await prisma.request.create({
+      data: {
+        title,
+        description,
+        clientId: Number(clientId),
       },
-      orderBy: { created_at: 'desc' }
     });
-    res.json(requests);
+    return res.status(201).json(request);
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка получения заявок' });
+    console.error('Ошибка создания заявки:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
 
-// 2. ПОЛУЧЕНИЕ ОДНОЙ ЗАЯВКИ (то, чего не хватало)
+export const getRequests = async (req: Request, res: Response) => {
+  try {
+    const { status } = req.query;
+    const where: any = {};
+    if (status) {
+      where.status = status;
+    }
+
+    const requests = await prisma.request.findMany({
+      where,
+      include: { client: true, comments: true },
+    });
+    return res.json(requests);
+  } catch (error) {
+    console.error('Ошибка получения заявок:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  }
+};
+
 export const getRequestById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const request = await prisma.request.findUnique({
       where: { id: Number(id) },
-      include: { client: true }
+      include: { client: true, comments: true },
     });
-    
     if (!request) {
-      return res.status(404).json({ error: 'Заявка не найдена' });
+      return res.status(404).json({ message: 'Заявка не найдена' });
     }
-    
-    res.json(request);
+    return res.json(request);
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка сервера при поиске заявки' });
+    console.error('Ошибка получения заявки:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
 
-// 3. Создание заявки
-export const createRequest = async (req: Request, res: Response) => {
-  const { title, description, client_id } = req.body; // Проверь, что description тут есть
-  try {
-    const newRequest = await prisma.request.create({
-      data: {
-        title,
-        description, // Передаем в Prisma
-        client_id: Number(client_id),
-        status: 'NEW'
-      }
-    });
-    res.json(newRequest);
-  } catch (error) {
-    res.status(500).json({ error: 'Ошибка создания заявки' });
-  }
-};
-
-// 4. Обновление (статус, заголовок, описание)
 export const updateRequest = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status } = req.body;
-    const updated = await prisma.request.update({
+    const { title, description, status, clientId } = req.body;
+
+    const request = await prisma.request.update({
       where: { id: Number(id) },
-      data: { 
-        ...(title && { title }),
+      data: {
+        ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
-        ...(status && { status: status as any }),
+        ...(status !== undefined && { status }),
+        ...(clientId !== undefined && { clientId: Number(clientId) }),
       },
     });
-    res.json(updated);
+    return res.json(request);
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка при обновлении заявки' });
+    console.error('Ошибка обновления заявки:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
 
-// 5. Удаление заявки и её комментариев
 export const deleteRequest = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const rid = Number(id);
-
-    // Сначала удаляем комментарии, связанные с заявкой
-    await prisma.comment.deleteMany({ where: { request_id: rid } });
-    // Потом саму заявку
-    await prisma.request.delete({ where: { id: rid } });
-
-    res.json({ message: 'Заявка удалена' });
+    await prisma.request.delete({ where: { id: Number(id) } });
+    return res.json({ message: 'Заявка удалена' });
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка при удалении заявки' });
+    console.error('Ошибка удаления заявки:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
 
-// 6. Комментарии
-export const getComments = async (req: Request, res: Response) => {
+// --- Комментарии ---
+
+export const getRequestComments = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const comments = await prisma.comment.findMany({
-      where: { request_id: Number(id) },
-      orderBy: { created_at: 'asc' }
+      where: { requestId: Number(id) },
+      orderBy: { createdAt: 'asc' },
     });
-    res.json(comments);
+    return res.json(comments);
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка загрузки комментариев' });
+    console.error('Ошибка получения комментариев:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
 
-export const addComment = async (req: Request, res: Response) => {
+export const createComment = async (req: Request, res: Response) => {
   try {
-    const { request_id, content } = req.body; // Из фронтенда все еще может приходить content
+    const { text, requestId } = req.body;  // теперь поле text
+    if (!text || !requestId) {
+      return res.status(400).json({ message: 'text и requestId обязательны' });
+    }
+
     const comment = await prisma.comment.create({
       data: {
-        request_id: Number(request_id),
-        content: String(content)
-      }
+        text,                               // передаём text
+        requestId: Number(requestId),
+      },
     });
-    res.json(comment);
+    return res.status(201).json(comment);
   } catch (error) {
-    console.error(error); // Добавь лог, чтобы видеть реальную причину, если упадет
-    res.status(500).json({ error: 'Ошибка добавления комментария' });
-  }
-};
-
-// Удаление комментария
-export const deleteComment = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    await prisma.comment.delete({ where: { id: Number(id) } });
-    res.json({ message: 'Комментарий удален' });
-  } catch (error) {
-    res.status(500).json({ error: 'Ошибка удаления комментария' });
-  }
-};
-
-// Редактирование комментария
-export const updateComment = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { content } = req.body;
-  try {
-    const updated = await (prisma.comment as any).update({
-      where: { id: Number(id) },
-      data: { content } 
-    });
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: 'Ошибка обновления комментария' });
+    console.error('Ошибка создания комментария:', error);
+    return res.status(500).json({ message: 'Внутренняя ошибка сервера' });
   }
 };
