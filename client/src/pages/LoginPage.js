@@ -3,7 +3,7 @@ import api from '../api/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -26,12 +26,16 @@ const Login = () => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      background: 'var(--bg)'
+      background: '#fcf7f8'
     }}>
-      <div className="card" style={{ width: '360px', padding: '30px' }}>
-        <h2 style={{ textAlign: 'center', color: 'var(--text-heading)', marginBottom: '20px' }}>
-          ClientFlow
-        </h2>
+      <div style={{
+        background: 'white',
+        padding: '30px',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        width: '360px'
+      }}>
+        <h2 style={{ textAlign: 'center', color: '#36283b', marginBottom: '20px' }}>ClientFlow</h2>
         <h3 style={{ textAlign: 'center', marginBottom: '25px' }}>Вход в систему</h3>
         <form onSubmit={handleSubmit}>
           <label style={{ fontWeight: 500 }}>Email</label>
@@ -40,7 +44,7 @@ const Login = () => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            style={{ width: '100%', marginBottom: '15px', marginTop: '5px' }}
+            style={{ width: '100%', marginBottom: '15px', marginTop: '5px', padding: '10px 12px' }}
           />
           <label style={{ fontWeight: 500 }}>Пароль</label>
           <input
@@ -48,16 +52,22 @@ const Login = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            style={{ width: '100%', marginBottom: '20px', marginTop: '5px' }}
+            style={{ width: '100%', marginBottom: '20px', marginTop: '5px', padding: '10px 12px' }}
           />
-          <button type="submit" className="btn-primary" style={{ width: '100%' }}>Войти</button>
+          <button type="submit" style={{
+            width: '100%',
+            padding: '10px',
+            backgroundColor: '#d49ea0',
+            color: '#2c1e31',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}>Войти</button>
         </form>
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          Нет аккаунта? <a href="/register" style={{ color: 'var(--accent)' }}>Зарегистрироваться</a>
-        </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;

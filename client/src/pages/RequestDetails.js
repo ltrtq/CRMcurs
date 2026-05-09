@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { toast } from 'react-toastify';
+import { FiSearch, FiArrowLeft, FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 const RequestDetails = () => {
   const { id } = useParams();
@@ -89,12 +90,19 @@ const RequestDetails = () => {
     return `badge ${map[status] || 'badge-new'}`;
   };
 
+  const statusLabels = {
+    NEW: 'Новая',
+    IN_PROGRESS: 'В работе',
+    DONE: 'Завершена',
+    CANCELLED: 'Отменена'
+  };
+
   if (!request) return <div style={{ padding: '30px' }}>Загрузка...</div>;
 
   return (
     <div>
-      <button onClick={() => navigate(-1)} className="btn-outline" style={{ marginBottom: '20px', padding: '6px 14px', fontSize: '0.85rem' }}>
-        ← Назад
+      <button onClick={() => navigate(-1)} className="btn-outline" style={{ marginBottom: '20px', padding: '6px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <FiArrowLeft size={14} /> Назад
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -117,7 +125,7 @@ const RequestDetails = () => {
             <option value="DONE">Завершена</option>
             <option value="CANCELLED">Отменена</option>
           </select>
-          <span className={getStatusBadge(request.status)}>{request.status}</span>
+          <span className={getStatusBadge(request.status)}>{statusLabels[request.status] || request.status}</span>
         </p>
       </div>
 
@@ -126,22 +134,34 @@ const RequestDetails = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h3 style={{ color: 'var(--text-heading)' }}>История взаимодействия</h3>
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <FiSearch className="search-icon" size={16} />
           <input type="text" placeholder="Поиск по комментариям..." value={commentSearch} onChange={e => setCommentSearch(e.target.value)} />
         </div>
       </div>
 
       {filteredComments.length === 0 && <p style={{ color: '#999', fontStyle: 'italic' }}>Комментариев не найдено</p>}
       {filteredComments.map(comment => (
-        <div key={comment.id} className="card" style={{ padding: '15px', marginBottom: '10px' }}>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{comment.text}</p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <span>{new Date(comment.createdAt).toLocaleString()}</span>
-            <div>
-              <button onClick={() => handleEditComment(comment)} className="btn-outline" style={{ marginRight: '8px', padding: '2px 8px', fontSize: '0.75rem' }}>Изменить</button>
-              <button onClick={() => handleDeleteComment(comment.id)} className="btn-danger" style={{ padding: '2px 8px', fontSize: '0.75rem' }}>Удалить</button>
+        <div key={comment.id} className="card" style={{ padding: '15px', marginBottom: '10px', position: 'relative' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+            <small style={{ color: 'var(--text-muted)' }}>{new Date(comment.createdAt).toLocaleString()}</small>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => handleEditComment(comment)}
+                title="Редактировать"
+                style={{ background: 'none', border: 'none', color: '#7e5a83', cursor: 'pointer', padding: '2px' }}
+              >
+                <FiEdit2 size={18} />
+              </button>
+              <button
+                onClick={() => handleDeleteComment(comment.id)}
+                title="Удалить"
+                style={{ background: 'none', border: 'none', color: '#c96b6b', cursor: 'pointer', padding: '2px' }}
+              >
+                <FiTrash2 size={18} />
+              </button>
             </div>
           </div>
+          <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{comment.text}</p>
         </div>
       ))}
 
