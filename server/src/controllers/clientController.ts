@@ -26,7 +26,6 @@ export const createClient = async (req: Request, res: Response) => {
     });
     res.json(newClient);
   } catch (error: any) {
-    // Проверка на уникальность (если email уже существует в БД)
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'Клиент с таким Email уже существует' });
     }

@@ -51,9 +51,9 @@ const RequestDetails = () => {
         e.preventDefault();
         if (!newComment.trim()) return;
         try {
-            const res = await api.post('/requests/comments', {  
-                text: newComment,                      
-                requestId: Number(id)                   
+            const res = await api.post('/requests/comments', {
+                text: newComment,
+                requestId: Number(id)
             });
             setComments([...comments, res.data]);
             setNewComment('');
@@ -98,8 +98,18 @@ const RequestDetails = () => {
 
     return (
         <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            <button onClick={() => navigate('/dashboard')} style={{ marginBottom: '20px', cursor: 'pointer' }}>
-                ← Назад к списку заявок
+            {/* 👇 ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ */}
+            <button 
+                onClick={() => {
+                    if (window.history.length > 1) {
+                        navigate(-1);               // возврат на предыдущую страницу
+                    } else {
+                        navigate('/dashboard');     // fallback, если истории нет
+                    }
+                }} 
+                style={{ marginBottom: '20px', cursor: 'pointer' }}
+            >
+                ← Назад
             </button>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
