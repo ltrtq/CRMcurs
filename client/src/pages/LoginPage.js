@@ -35,7 +35,7 @@ const LoginPage = () => {
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         width: '360px'
       }}>
-        <h2 style={{ textAlign: 'center', color: '#36283b', marginBottom: '20px' }}>ClientFlow</h2>
+        <h2 style={{ textAlign: 'center', color: '#36283b', marginBottom: '20px' }}>Klio</h2>
         <h3 style={{ textAlign: 'center', marginBottom: '25px' }}>Вход в систему</h3>
         <form onSubmit={handleSubmit}>
           <label style={{ fontWeight: 500 }}>Email</label>

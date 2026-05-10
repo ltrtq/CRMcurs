@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MdAssignment, MdPeople } from 'react-icons/md';
 import { FiLogOut, FiMenu } from 'react-icons/fi';
+import Logo from './Logo.svg';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -21,7 +22,9 @@ const Layout = ({ children }) => {
         <FiMenu size={20} />
       </button>
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">ClientFlow</div>
+        <div className="sidebar-logo" style={{ padding: '10px 20px 30px' }}>
+          <img src={Logo} alt="Klio" style={{ height: '36px' }} />
+        </div>
         <ul className="sidebar-menu">
           <li>
             <Link to="/dashboard" className={isActive('/dashboard') ? 'active' : ''} onClick={() => setSidebarOpen(false)}>
@@ -33,7 +36,6 @@ const Layout = ({ children }) => {
               <MdPeople size={18} /> Клиенты
             </Link>
           </li>
-          {/* Выход прижат к низу через CSS li:last-child { margin-top: auto } */}
           <li>
             <Link to="/login" onClick={handleLogout}>
               <FiLogOut size={18} /> Выход

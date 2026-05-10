@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'http://localhost:5000/api',  // если порт другой, поправь
 });
 
-// Добавляем токен в каждый запрос
+// Добавляем токен ко всем запросам
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -14,18 +13,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Глобальная обработка ошибок
+// Если сервер вернул 401 или 403 – выкидываем на логин
 api.interceptors.response.use(
-    response => response,
-    error => {
-        if (!error.response) {
-            toast.error("Сервер недоступен. Проверьте работу Docker-контейнеров.");
-        } else if (error.response.status === 401) {
-            toast.error("Сессия истекла. Войдите заново.");
-            // Можно добавить редирект на /login
-        }
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
+    return Promise.reject(error);
+  }
 );
 
 export default api;
